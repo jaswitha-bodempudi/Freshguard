@@ -1,0 +1,398 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FreshGuard - Food Waste Analytics</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 32px 20px;
+            font-family: Arial, Helvetica, sans-serif;
+            background: linear-gradient(135deg, #eef7ee, #f7faf7);
+            color: #26352b;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .header-icon {
+            font-size: 42px;
+            margin-bottom: 8px;
+        }
+
+        .header h1 {
+            color: #247447;
+            margin: 0 0 10px;
+            font-size: clamp(27px, 4vw, 36px);
+        }
+
+        .subtitle {
+            color: #647067;
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: repeat(
+                auto-fit,
+                minmax(220px, 1fr)
+            );
+            gap: 20px;
+        }
+
+        .card {
+            min-width: 0;
+            background: #ffffff;
+            padding: 24px 20px;
+            border: 1px solid #e5ece6;
+            border-radius: 14px;
+            text-align: center;
+            box-shadow: 0 4px 14px rgba(28, 65, 40, 0.06);
+        }
+
+        .card-icon {
+            font-size: 34px;
+            margin-bottom: 10px;
+        }
+
+        .card h2 {
+            color: #526057;
+            font-size: 16px;
+            line-height: 1.5;
+            margin: 8px 0 12px;
+        }
+
+        .number {
+            font-size: clamp(26px, 3vw, 34px);
+            font-weight: 700;
+            color: #247447;
+            overflow-wrap: anywhere;
+        }
+
+        .card p {
+            color: #78827b;
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 0;
+        }
+
+        .expired .number {
+            color: #bd3b36;
+        }
+
+        .wide-card {
+            grid-column: 1 / -1;
+            text-align: left;
+        }
+
+        .wide-card h2 {
+            color: #247447;
+            font-size: 19px;
+            margin-top: 0;
+        }
+
+        .insight-row,
+        .month-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            padding: 13px 0;
+            border-bottom: 1px solid #edf0ed;
+        }
+
+        .insight-row:last-of-type,
+        .month-row:last-child {
+            border-bottom: none;
+        }
+
+        .waste-count {
+            color: #bd3b36;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .month-total {
+            color: #247447;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .note {
+            background: #ffffff;
+            margin-top: 24px;
+            padding: 18px 20px;
+            border: 1px solid #e5ece6;
+            border-left: 4px solid #8ba894;
+            border-radius: 10px;
+            color: #5d6a61;
+            font-size: 14px;
+            line-height: 1.8;
+        }
+
+        .actions {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 14px;
+            margin: 28px 0 8px;
+        }
+
+        .btn {
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            min-height: 46px;
+            padding: 12px 20px;
+            border: 1px solid transparent;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            font-family: inherit;
+            text-decoration: none;
+            text-align: center;
+            transition: background 0.2s, transform 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-primary {
+            background: #247447;
+            color: #ffffff;
+        }
+
+        .btn-primary:hover {
+            background: #195b35;
+        }
+
+        .btn-outline {
+            background: #ffffff;
+            color: #247447;
+            border-color: #247447;
+        }
+
+        .btn-outline:hover {
+            background: #edf6ef;
+        }
+
+        .btn-secondary {
+            background: #344054;
+            color: #ffffff;
+        }
+
+        .btn-secondary:hover {
+            background: #1d2939;
+        }
+
+        @media (max-width: 520px) {
+            body {
+                padding: 24px 14px;
+            }
+
+            .analytics-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .wide-card {
+                grid-column: auto;
+            }
+
+            .actions {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .btn {
+                width: 100%;
+            }
+
+            .card {
+                padding: 22px 16px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<div class="container">
+
+    <header class="header">
+        <div class="header-icon">📊</div>
+        <h1>Food Waste Analytics</h1>
+        <p class="subtitle">
+            Monitor your food inventory, grocery spending,
+            consumption and waste.
+        </p>
+    </header>
+
+    <section class="analytics-grid">
+
+        <div class="card">
+            <div class="card-icon">🧺</div>
+            <h2>Current Inventory</h2>
+            <div class="number">{{ total_inventory }}</div>
+            <p>Items currently stored</p>
+        </div>
+
+        <div class="card">
+            <div class="card-icon">💰</div>
+            <h2>Total Grocery Spending</h2>
+            <div class="number">
+                ₹{{ "%.2f"|format(total_grocery_spending|float) }}
+            </div>
+            <p>Total recorded grocery spending</p>
+        </div>
+
+        <div class="card expired">
+            <div class="card-icon">🗑️</div>
+            <h2>Total Waste Cost</h2>
+            <div class="number">
+                ₹{{ "%.2f"|format(total_waste_cost|float) }}
+            </div>
+            <p>Recorded cost of wasted food</p>
+        </div>
+
+        <div class="card">
+            <div class="card-icon">📦</div>
+            <h2>Current Inventory Value</h2>
+            <div class="number">
+                ₹{{ "%.2f"|format(current_inventory_value|float) }}
+            </div>
+            <p>Total recorded cost of stored food</p>
+        </div>
+
+        <div class="card">
+            <div class="card-icon">➕</div>
+            <h2>Total Added</h2>
+            <div class="number">{{ total_added }}</div>
+            <p>Food addition records</p>
+        </div>
+
+        <div class="card">
+            <div class="card-icon">🍽️</div>
+            <h2>Total Consumed</h2>
+            <div class="number">{{ total_consumed }}</div>
+            <p>Food consumption records</p>
+        </div>
+
+        <div class="card expired">
+            <div class="card-icon">⚠️</div>
+            <h2>Currently Expired</h2>
+            <div class="number">{{ total_expired }}</div>
+            <p>Expired items still in inventory</p>
+        </div>
+
+        <div class="card expired">
+            <div class="card-icon">🗑️</div>
+            <h2>Total Wasted</h2>
+            <div class="number">{{ total_wasted }}</div>
+            <p>Food items recorded as wasted</p>
+        </div>
+
+        <!-- Waste Reduction Insights -->
+        <div class="card wide-card">
+            <h2>💡 Waste Reduction Insights</h2>
+
+            {% if waste_insights %}
+                <p>
+                    Foods recorded as wasted most frequently:
+                </p>
+
+                {% for item in waste_insights %}
+                    <div class="insight-row">
+                        <strong>{{ item["food_name"] }}</strong>
+                        <span class="waste-count">
+                            {{ item["waste_count"] }} time(s)
+                        </span>
+                    </div>
+                {% endfor %}
+
+                <p>
+                    <strong>Tip:</strong>
+                    Review the quantities you purchase, store food
+                    correctly, and plan meals around items approaching
+                    their expiry dates.
+                </p>
+            {% else %}
+                <p>
+                    No food waste has been recorded yet. When you mark
+                    an item as wasted, it will appear here.
+                </p>
+                <p>
+                    <strong>Tip:</strong>
+                    Check expiry dates regularly and use older food
+                    first when it is still safe to consume.
+                </p>
+            {% endif %}
+        </div>
+
+        <!-- Monthly Grocery Spending -->
+        <div class="card wide-card">
+            <h2>📅 Monthly Grocery Spending</h2>
+
+            {% if monthly_spending %}
+                {% for month in monthly_spending %}
+                    <div class="month-row">
+                        <strong>{{ month["month"] }}</strong>
+                        <span class="month-total">
+                            ₹{{ "%.2f"|format(month["total"]|float) }}
+                        </span>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p>No grocery spending has been recorded yet.</p>
+            {% endif %}
+        </div>
+
+    </section>
+
+    <div class="note">
+        <strong>Note:</strong>
+        These figures are based on recorded food items and history
+        records. Expired food is not necessarily the same as food wasted.
+        Waste statistics depend on food items being explicitly recorded
+        as wasted.
+    </div>
+
+    <!-- Analytics navigation: keep these links here, not on the dashboard -->
+    <nav class="actions" aria-label="Analytics actions">
+
+        <a href="{{ url_for('spending_analysis') }}"
+           class="btn btn-primary">
+            ₹ Check Your Spending
+        </a>
+
+        <a href="{{ url_for('budget_tracker') }}"
+           class="btn btn-outline">
+            📅 Monthly Budget Tracker
+        </a>
+
+        <a href="{{ url_for('dashboard') }}"
+           class="btn btn-secondary">
+            ← Back to Dashboard
+        </a>
+
+    </nav>
+
+</div>
+</body>
+</html>

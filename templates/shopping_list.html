@@ -1,0 +1,317 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FreshGuard - Shopping List</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 30px 20px;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #e8f5e9, #f1f8e9);
+            color: #333;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #2e7d32;
+            font-size: 36px;
+        }
+
+        .panel {
+            background: white;
+            padding: 25px;
+            border-radius: 14px;
+            box-shadow: 0 5px 18px rgba(0, 0, 0, 0.08);
+            margin-bottom: 22px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr auto;
+            gap: 12px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        /* Add Item button */
+        .add-btn {
+            padding: 12px 16px;
+            border: none;
+            border-radius: 8px;
+            background: #2e7d32;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .add-btn:hover {
+            background: #1b5e20;
+        }
+
+        /* Shopping item row */
+        .item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            padding: 18px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .item:last-child {
+            border-bottom: none;
+        }
+
+        .item-name {
+            font-weight: bold;
+            font-size: 17px;
+        }
+
+        .purchased .item-name {
+            color: #777;
+            text-decoration: line-through;
+        }
+
+        .quantity {
+            color: #666;
+            font-size: 14px;
+            margin-top: 6px;
+        }
+
+        .status {
+            display: inline-block;
+            margin-top: 8px;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .to-buy {
+            color: #ef6c00;
+        }
+
+        .bought-status {
+            color: #2e7d32;
+        }
+
+        /* Bought and Cancel: green text only */
+        .bought-btn,
+        .cancel-btn {
+            display: inline-block;
+            padding: 6px 4px;
+            border: none;
+            border-radius: 0;
+            background: transparent;
+            color: #2e7d32;
+            font-family: Arial, sans-serif;
+            font-size: 15px;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            white-space: normal;
+        }
+
+        .bought-btn:hover,
+        .cancel-btn:hover {
+            background: transparent;
+            color: #1b5e20;
+            text-decoration: underline;
+        }
+
+        .item-actions {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .item-actions form {
+            display: inline;
+            margin: 0;
+        }
+
+        .empty {
+            text-align: center;
+            color: #666;
+            padding: 25px 0;
+        }
+
+        /* Back to Dashboard */
+        .back {
+            display: inline-block;
+            padding: 12px 18px;
+            background: #2e7d32;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+
+        .back:hover {
+            background: #1b5e20;
+        }
+
+        @media (max-width: 600px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .item {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .item-actions {
+                width: 100%;
+                justify-content: flex-start;
+                gap: 18px;
+            }
+
+            .header h1 {
+                font-size: 29px;
+            }
+
+            .panel {
+                padding: 18px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+
+        <!-- Header -->
+        <div class="header">
+            <div style="font-size: 45px;">🛒</div>
+            <h1>Smart Shopping List</h1>
+            <p>Plan your purchases and avoid unnecessary food buying.</p>
+        </div>
+
+        <!-- Add Grocery Item -->
+        <div class="panel">
+            <h2>Add Grocery Item</h2>
+
+            <form method="POST" action="{{ url_for('shopping_list') }}">
+                <div class="form-row">
+                    <input
+                        type="text"
+                        name="item_name"
+                        placeholder="Food name, e.g. Milk"
+                        required
+                    >
+
+                    <input
+                        type="text"
+                        name="quantity"
+                        placeholder="Quantity"
+                    >
+
+                    <button type="submit" class="add-btn">
+                        + Add Item
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Shopping Items -->
+        <div class="panel">
+            <h2>My Shopping Items</h2>
+
+            {% if items %}
+
+                {% for item in items %}
+
+                    <div class="item {% if item['is_purchased'] %}purchased{% endif %}">
+
+                        <div class="item-details">
+                            <div class="item-name">
+                                {{ item['item_name'] }}
+                            </div>
+
+                            {% if item['quantity'] %}
+                                <div class="quantity">
+                                    Quantity: {{ item['quantity'] }}
+                                </div>
+                            {% endif %}
+
+                            {% if item['is_purchased'] %}
+                                <div class="status bought-status">
+                                    ✓ Purchased
+                                </div>
+                            {% else %}
+                                <div class="status to-buy">
+                                    To buy
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="item-actions">
+
+                            {% if not item['is_purchased'] %}
+                                <a
+                                    href="{{ url_for('add_food', shopping_item_id=item['id']) }}"
+                                    class="bought-btn"
+                                >
+                                    ✓ Bought — Add to Inventory
+                                </a>
+                            {% endif %}
+
+                            <form
+                                method="POST"
+                                action="{{ url_for('cancel_shopping_item', item_id=item['id']) }}"
+                                onsubmit="return confirm('Remove this item from your shopping list?');"
+                            >
+                                <button type="submit" class="cancel-btn">
+                                    ✕ Cancel
+                                </button>
+                            </form>
+
+                        </div>
+                    </div>
+
+                {% endfor %}
+
+            {% else %}
+
+                <div class="empty">
+                    Your shopping list is empty. Add a grocery item above!
+                </div>
+
+            {% endif %}
+        </div>
+
+        <!-- Back to Dashboard -->
+        <div style="text-align: center;">
+            <a href="{{ url_for('dashboard') }}" class="back">
+                ← Back to Dashboard
+            </a>
+        </div>
+
+    </div>
+</body>
+</html>

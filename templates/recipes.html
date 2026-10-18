@@ -1,0 +1,161 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FreshGuard - Recipe Recommendations</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 30px 20px;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #e8f5e9, #f1f8e9);
+            color: #333;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: #2e7d32;
+        }
+
+        .subtitle {
+            color: #666;
+        }
+
+        .recipe {
+            background: white;
+            padding: 24px;
+            margin-bottom: 20px;
+            border-radius: 14px;
+            box-shadow: 0 5px 18px rgba(0, 0, 0, 0.08);
+        }
+
+        .recipe h2 {
+            margin-top: 0;
+            color: #2e7d32;
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 6px 10px;
+            margin: 4px 4px 4px 0;
+            border-radius: 20px;
+            background: #e8f5e9;
+            color: #2e7d32;
+            font-size: 13px;
+        }
+
+        .missing {
+            background: #fff3e0;
+            color: #8d4b00;
+        }
+
+        .empty {
+            padding: 25px;
+            background: white;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .back {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 12px 18px;
+            background: #2e7d32;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+
+        .back:hover {
+            background: #1b5e20;
+        }
+    </style>
+</head>
+
+<body>
+<div class="container">
+
+    <div class="header">
+        <div style="font-size: 45px;">🍲</div>
+        <h1>Smart Recipe Recommendations</h1>
+        <p class="subtitle">
+            Discover recipes using food in your inventory.
+        </p>
+    </div>
+
+    {% if recommendations %}
+
+        {% for recipe in recommendations %}
+
+        <div class="recipe">
+            <h2>🍽️ {{ recipe.name }}</h2>
+
+            <p>
+                <strong>Matched ingredients:</strong>
+            </p>
+
+            {% for ingredient in recipe.matched_ingredients %}
+                <span class="tag">✓ {{ ingredient }}</span>
+            {% endfor %}
+
+            {% if recipe.missing_ingredients %}
+                <p><strong>Ingredients you may need:</strong></p>
+
+                {% for ingredient in recipe.missing_ingredients %}
+                    <span class="tag missing">{{ ingredient }}</span>
+                {% endfor %}
+            {% endif %}
+
+            <p>
+                <strong>Instructions:</strong><br>
+                {{ recipe.instructions }}
+            </p>
+
+            <p>
+                <strong>Ingredient match:</strong>
+                {{ recipe.match_count }} /
+                {{ recipe.total_ingredients }}
+            </p>
+        </div>
+
+        {% endfor %}
+
+    {% else %}
+
+        <div class="empty">
+            <h2>No recipes found yet 🍎</h2>
+            <p>
+                Add foods such as banana, milk, rice, carrot,
+                bread, tomato, cheese, or egg to your inventory
+                to receive recipe suggestions.
+            </p>
+        </div>
+
+    {% endif %}
+
+    <div style="text-align:center;">
+        <a href="{{ url_for('dashboard') }}" class="back">
+            ← Back to Dashboard
+        </a>
+    </div>
+
+</div>
+</body>
+</html>

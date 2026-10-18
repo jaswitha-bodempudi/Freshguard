@@ -1,0 +1,383 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Food - FreshGuard</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #e8f5e9, #f1f8e9);
+            color: #333;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: auto;
+        }
+
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        header h1 {
+            color: #2e7d32;
+            margin: 0;
+        }
+
+        nav {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        nav a {
+            color: #2e7d32;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        nav a:hover {
+            text-decoration: underline;
+        }
+
+        .add-food-container {
+            max-width: 700px;
+            margin: 30px auto;
+            padding: 30px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.10);
+        }
+
+        .add-food-container h1 {
+            text-align: center;
+            color: #2e7d32;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 7px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 15px;
+            background: white;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #2e7d32;
+        }
+
+        .detected-image {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .detected-image img {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 12px;
+        }
+
+        .button-row {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        .save-button,
+        .cancel-button {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            color: white;
+            text-align: center;
+            text-decoration: none;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .save-button {
+            background: #2e7d32;
+        }
+
+        .save-button:hover {
+            background: #1b5e20;
+        }
+
+        .cancel-button {
+            background: #757575;
+        }
+
+        .cancel-button:hover {
+            background: #555;
+        }
+
+        .error {
+            padding: 12px;
+            margin-bottom: 20px;
+            background: #ffebee;
+            color: #c62828;
+            border: 1px solid #ef9a9a;
+            border-radius: 8px;
+        }
+
+        .info-box {
+            margin-bottom: 25px;
+            padding: 15px;
+            background: #e8f5e9;
+            border: 1px solid #a5d6a7;
+            border-radius: 10px;
+            color: #2e7d32;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .add-food-container {
+                margin: 20px auto;
+                padding: 20px;
+            }
+
+            .button-row {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<div class="container">
+
+    <header>
+        <h1>🥗 FreshGuard</h1>
+
+        <nav>
+            <a href="{{ url_for('dashboard') }}">🏠 Dashboard</a>
+            <a href="{{ url_for('history') }}">📊 Food History</a>
+            <a href="{{ url_for('logout') }}">🚪 Logout</a>
+        </nav>
+    </header>
+
+    <div class="add-food-container">
+
+        <h1>➕ Add Food</h1>
+        <p class="subtitle">
+            Add the food to your FreshGuard inventory.
+        </p>
+
+        {% if error %}
+        <div class="error">
+            <strong>Error:</strong><br>
+            {{ error }}
+        </div>
+        {% endif %}
+
+        {% if food_name or expiry_date or image_path %}
+        <div class="info-box">
+            <strong>🤖 Information detected by FreshGuard</strong>
+            <br><br>
+            You can review and edit the information below
+            before adding the food to your inventory.
+        </div>
+        {% endif %}
+
+        {% if image_path %}
+        <div class="detected-image">
+            <img
+                src="{{ url_for('static', filename=image_path) }}"
+                alt="Food image"
+            >
+        </div>
+        {% endif %}
+
+        <form method="POST" action="{{ url_for('add_food') }}">
+
+            {% if shopping_item_id %}
+            <input
+                type="hidden"
+                name="shopping_item_id"
+                value="{{ shopping_item_id }}"
+            >
+            {% endif %}
+
+            <!-- FOOD NAME -->
+            <div class="form-group">
+                <label for="food_name">Food Name</label>
+                <input
+                    type="text"
+                    id="food_name"
+                    name="food_name"
+                    value="{{ food_name or '' }}"
+                    placeholder="Enter food name"
+                    required
+                >
+            </div>
+
+            <!-- CATEGORY -->
+            <div class="form-group">
+                <label for="category">Category</label>
+                <input
+                    type="text"
+                    id="category"
+                    name="category"
+                    value="{{ category or '' }}"
+                    placeholder="Example: Dairy, Fruit, Vegetable"
+                >
+            </div>
+
+            <!-- STORAGE LOCATION -->
+            <div class="form-group">
+                <label for="storage_location">Storage Location</label>
+
+                <select
+                    id="storage_location"
+                    name="storage_location"
+                    required
+                >
+                    <option value="">Select Storage Location</option>
+
+                    <option value="Fridge"
+                        {% if storage_location == 'Fridge' %}selected{% endif %}>
+                        Fridge
+                    </option>
+
+                    <option value="Freezer"
+                        {% if storage_location == 'Freezer' %}selected{% endif %}>
+                        Freezer
+                    </option>
+
+                    <option value="Pantry"
+                        {% if storage_location == 'Pantry' %}selected{% endif %}>
+                        Pantry
+                    </option>
+
+                    <option value="Room Temperature"
+                        {% if storage_location == 'Room Temperature' %}selected{% endif %}>
+                        Room Temperature
+                    </option>
+                </select>
+            </div>
+
+            <!-- QUANTITY -->
+            <div class="form-group">
+                <label for="quantity">Quantity</label>
+                <input
+                    type="text"
+                    id="quantity"
+                    name="quantity"
+                    value="{{ quantity or '' }}"
+                    placeholder="Example: 1 packet"
+                    required
+                >
+            </div>
+
+            <!-- FOOD COST -->
+            <div class="form-group">
+                <label for="cost">Food Cost (₹)</label>
+                <input
+                    type="number"
+                    id="cost"
+                    name="cost"
+                    min="0"
+                    step="0.01"
+                    value="{{ cost if cost is defined else '0' }}"
+                    placeholder="Enter food cost"
+                >
+            </div>
+
+            <!-- PURCHASE DATE -->
+            <div class="form-group">
+                <label for="purchase_date">Purchase Date</label>
+                <input
+                    type="date"
+                    id="purchase_date"
+                    name="purchase_date"
+                    value="{{ purchase_date or '' }}"
+                >
+            </div>
+
+            <!-- EXPIRY DATE -->
+            <div class="form-group">
+                <label for="expiry_date">Expiry Date</label>
+                <input
+                    type="date"
+                    id="expiry_date"
+                    name="expiry_date"
+                    value="{{ expiry_date or '' }}"
+                    required
+                >
+            </div>
+
+            <!-- HIDDEN IMAGE PATH -->
+            <input
+                type="hidden"
+                name="image_path"
+                value="{{ image_path or '' }}"
+            >
+
+            <!-- BUTTONS -->
+            <div class="button-row">
+                <button type="submit" class="save-button">
+                    ➕ Add Food
+                </button>
+
+                <a
+                    href="{{ url_for('dashboard') }}"
+                    class="cancel-button"
+                >
+                    ✖ Cancel
+                </a>
+            </div>
+
+        </form>
+    </div>
+</div>
+</body>
+</html>

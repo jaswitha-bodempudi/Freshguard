@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <title>Food Recognition - FreshGuard</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
+
+    <style>
+
+        .result-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 25px;
+            flex-wrap: wrap;
+        }
+
+        .add-food-button {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .cancel-button {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .result-box {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 12px;
+            background: #f8f9fa;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>📷 AI Food Recognition</h1>
+
+    <p>
+        Upload a food image and FreshGuard will try to identify it.
+    </p>
+
+
+    {% if error %}
+
+        <div class="error">
+            ⚠️ {{ error }}
+        </div>
+
+    {% endif %}
+
+
+    <!-- ==================================================
+         IMAGE UPLOAD
+    ================================================== -->
+
+    <form
+        method="POST"
+        enctype="multipart/form-data"
+    >
+
+        <input
+            type="file"
+            name="image"
+            accept=".png,.jpg,.jpeg,.webp"
+            required
+        >
+
+        <br><br>
+
+        <button type="submit">
+            🤖 Recognize Food
+        </button>
+
+    </form>
+
+
+    {% if image_path %}
+
+        <hr>
+
+        <h2>📸 Uploaded Image</h2>
+
+        <img
+            src="{{ image_path }}"
+            alt="Uploaded food"
+            style="
+                max-width:400px;
+                border-radius:12px;
+            "
+        >
+
+    {% endif %}
+
+
+    {% if prediction %}
+
+        <hr>
+
+        <div class="result-box">
+
+            <h2>🤖 AI Prediction</h2>
+
+            <h3>
+                {{ prediction }}
+            </h3>
+
+
+            {% if confidence is not none %}
+
+                <p>
+                    Confidence:
+                    <strong>
+                        {{ "%.2f"|format(confidence) }}%
+                    </strong>
+                </p>
+
+            {% endif %}
+
+
+            <p>
+                ⚠️ This is an AI image-classification estimate.
+                It should not be treated as a definitive food-safety decision.
+            </p>
+
+
+            <!-- ==================================================
+                 ADD FOOD / CANCEL
+            ================================================== -->
+
+            {% if prediction not in [
+                "Unknown Food",
+                "Food not confidently recognized",
+                "Recognition Failed"
+            ] %}
+
+                <div class="result-buttons">
+
+                    <!-- ADD FOOD -->
+
+                    <form
+                        method="GET"
+                        action="{{ url_for('add_food') }}"
+                    >
+
+                        <input
+                            type="hidden"
+                            name="food_name"
+                            value="{{ prediction }}"
+                        >
+
+                        <input
+                            type="hidden"
+                            name="image_path"
+                            value="uploads/{{ image_path.split('/')[-1] }}"
+                        >
+
+                        <button
+                            type="submit"
+                            class="add-food-button"
+                        >
+                            ➕ Add Food
+                        </button>
+
+                    </form>
+
+
+                    <!-- CANCEL -->
+
+                    <a
+                        href="{{ url_for('dashboard') }}"
+                        class="cancel-button"
+                    >
+                        ✖ Cancel
+                    </a>
+
+                </div>
+
+            {% else %}
+
+                <div class="result-buttons">
+
+                    <a
+                        href="{{ url_for('dashboard') }}"
+                        class="cancel-button"
+                    >
+                        ✖ Cancel
+                    </a>
+
+                </div>
+
+            {% endif %}
+
+        </div>
+
+    {% endif %}
+
+
+    <br>
+
+    <a href="{{ url_for('dashboard') }}">
+        ← Back to Dashboard
+    </a>
+
+</div>
+
+</body>
+
+</html>

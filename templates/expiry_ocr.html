@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>FreshGuard - Expiry Date Scanner</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background: linear-gradient(135deg, #e8f5e9, #f1f8e9);
+            min-height: 100vh;
+            padding: 30px 20px;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: auto;
+        }
+
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 18px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+        }
+
+        .logo {
+            text-align: center;
+            font-size: 45px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #2e7d32;
+            margin: 5px 0;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #777;
+            margin-bottom: 30px;
+        }
+
+        .upload-box {
+            border: 2px dashed #81c784;
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            background: #f9fff9;
+        }
+
+        input[type="file"] {
+            width: 100%;
+            padding: 12px;
+            margin: 20px 0;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            background: #2e7d32;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #1b5e20;
+        }
+
+        .error {
+            margin-top: 20px;
+            padding: 14px;
+            border-radius: 8px;
+            background: #ffebee;
+            color: #c62828;
+            border: 1px solid #ef9a9a;
+        }
+
+        .result {
+            margin-top: 30px;
+            padding: 25px;
+            border-radius: 12px;
+            background: #f1f8e9;
+            border: 1px solid #a5d6a7;
+            text-align: center;
+        }
+
+        .result h2 {
+            color: #2e7d32;
+        }
+
+        .expiry-date {
+            font-size: 32px;
+            font-weight: bold;
+            color: #2e7d32;
+            margin: 20px 0;
+        }
+
+        .detected-text {
+            margin-top: 20px;
+            padding: 15px;
+            background: #fafafa;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            text-align: left;
+            white-space: pre-wrap;
+            max-height: 250px;
+            overflow-y: auto;
+        }
+
+        .warning {
+            margin-top: 20px;
+            padding: 15px;
+            background: #fff8e1;
+            border: 1px solid #ffcc80;
+            border-radius: 8px;
+            color: #6d4c41;
+            text-align: left;
+        }
+
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 25px;
+            color: #2e7d32;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="card">
+
+        <div class="logo">📅</div>
+
+        <h1>FreshGuard</h1>
+
+        <p class="subtitle">
+            AI-Powered Expiry Date Scanner
+        </p>
+
+        {% if error %}
+        <div class="error">
+            <strong>Error:</strong><br>
+            {{ error }}
+        </div>
+        {% endif %}
+
+
+        <div class="upload-box">
+
+            <h2>Scan Food Package</h2>
+
+            <p>
+                Upload a clear image of the food package
+                showing the expiry date.
+            </p>
+
+            <form
+                method="POST"
+                enctype="multipart/form-data"
+                action="{{ url_for('expiry_ocr') }}"
+            >
+
+                <input
+                    type="file"
+                    name="image"
+                    accept=".jpg,.jpeg,.png,.webp"
+                    required
+                >
+
+                <button type="submit">
+                    📅 Detect Expiry Date
+                </button>
+
+            </form>
+
+        </div>
+
+
+        {% if expiry_date %}
+
+        <div class="result">
+
+            <h2>Detected Expiry Date</h2>
+
+            <div class="expiry-date">
+                {{ expiry_date }}
+            </div>
+            {% if date_status == "valid" %}
+
+<div style="
+    margin-top:20px;
+    padding:15px;
+    background:#e8f5e9;
+    border:1px solid #81c784;
+    border-radius:10px;
+    color:#2e7d32;
+    font-weight:bold;
+">
+    ✅ Expiry date is valid.
+</div>
+
+{% else %}
+
+<div style="
+    margin-top:20px;
+    padding:15px;
+    background:#ffebee;
+    border:1px solid #ef9a9a;
+    border-radius:10px;
+    color:#c62828;
+    font-weight:bold;
+">
+    ⚠️ This food item has already expired.
+</div>
+
+<div style="
+    margin-top:15px;
+    padding:15px;
+    background:#fff8e1;
+    border:1px solid #ffcc80;
+    border-radius:10px;
+    color:#6d4c41;
+">
+    This item can still be recorded in your inventory,
+    but <strong>do not consume expired food.</strong>
+</div>
+
+{% endif %}
+
+
+<!-- ADD FOOD BUTTON -->
+
+<form
+    method="GET"
+    action="{{ url_for('add_food') }}"
+    style="margin-top:20px;"
+>
+
+    <input
+        type="hidden"
+        name="food_name"
+        value="{{ food_name or '' }}"
+    >
+
+    <input
+        type="hidden"
+        name="expiry_date"
+        value="{{ database_expiry_date or '' }}"
+    >
+
+    <input
+        type="hidden"
+        name="image_path"
+        value="uploads/{{ image_filename }}"
+    >
+
+    <button type="submit">
+        ➕ Add Food
+    </button>
+
+</form>
+
+
+<!-- CANCEL BUTTON -->
+
+<a
+    href="{{ url_for('dashboard') }}"
+    style="
+        display:block;
+        width:100%;
+        padding:14px;
+        margin-top:10px;
+        border-radius:8px;
+        background:#757575;
+        color:white;
+        text-decoration:none;
+        font-size:16px;
+        font-weight:bold;
+        text-align:center;
+    "
+>
+    ✖ Cancel
+</a>
+
+                </div>
+        {% endif %}
+
+        <a
+            href="{{ url_for('dashboard') }}"
+            class="back-link"
+        >
+            ← Back to Dashboard
+        </a>
+
+    </div>
+    </div>
+
+</div>
+
+</body>
+
+</html>

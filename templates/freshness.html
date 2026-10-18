@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>FreshGuard - Freshness Check</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background: linear-gradient(
+                135deg,
+                #e8f5e9,
+                #f1f8e9
+            );
+            min-height: 100vh;
+            padding: 30px 20px;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: auto;
+        }
+
+        .card {
+            background: white;
+            border-radius: 18px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+        }
+
+        .logo {
+            text-align: center;
+            font-size: 45px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #2e7d32;
+            margin: 5px 0;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #777;
+            margin-bottom: 30px;
+        }
+
+        .upload-box {
+            border: 2px dashed #81c784;
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            background: #f9fff9;
+        }
+
+        input[type="file"] {
+            margin: 20px 0;
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+
+        .check-button {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            background: #2e7d32;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .check-button:hover {
+            background: #1b5e20;
+        }
+
+        .error {
+            margin-top: 20px;
+            padding: 14px;
+            border-radius: 8px;
+            background: #ffebee;
+            color: #c62828;
+            border: 1px solid #ef9a9a;
+        }
+
+        .result {
+            margin-top: 30px;
+            padding: 25px;
+            border-radius: 12px;
+            background: #f1f8e9;
+            border: 1px solid #a5d6a7;
+            text-align: center;
+        }
+
+        .result h2 {
+            color: #2e7d32;
+            margin-top: 0;
+        }
+
+        .prediction {
+            font-size: 28px;
+            font-weight: bold;
+            margin: 15px 0;
+            color: #2e7d32;
+        }
+
+        .confidence {
+            font-size: 18px;
+            color: #555;
+            margin-bottom: 20px;
+        }
+
+        .warning {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            background: #fff8e1;
+            color: #6d4c41;
+            border: 1px solid #ffcc80;
+            text-align: left;
+            line-height: 1.5;
+        }
+
+        .preview {
+            margin-top: 20px;
+        }
+
+        .preview img {
+            max-width: 100%;
+            max-height: 350px;
+            border-radius: 12px;
+            border: 1px solid #ddd;
+        }
+
+        /* =========================
+           ACTION BUTTONS
+        ========================= */
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            align-items: center;
+            margin-top: 25px;
+            flex-wrap: wrap;
+        }
+
+        .add-food-button {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 13px 25px;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .add-food-button:hover {
+            background: #1e7e34;
+        }
+
+        .cancel-button {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 13px 25px;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .cancel-button:hover {
+            background: #b02a37;
+        }
+
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 25px;
+            color: #2e7d32;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 600px) {
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .add-food-button,
+            .cancel-button {
+                width: 100%;
+                text-align: center;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+<div class="container">
+
+    <div class="card">
+
+        <div class="logo">
+            🥬
+        </div>
+
+        <h1>
+            FreshGuard
+        </h1>
+
+        <p class="subtitle">
+            AI-Based Food Freshness Prediction
+        </p>
+
+
+        <!-- =========================
+             ERROR
+        ========================== -->
+
+        {% if error %}
+
+        <div class="error">
+
+            <strong>Error:</strong>
+
+            <br>
+
+            {{ error }}
+
+        </div>
+
+        {% endif %}
+
+
+        <!-- =========================
+             UPLOAD SECTION
+        ========================== -->
+
+        <div class="upload-box">
+
+            <h2>
+                Check Food Freshness
+            </h2>
+
+            <p>
+                Upload an image of a fruit or food item.
+            </p>
+
+            <form
+                method="POST"
+                action="{{ url_for('freshness') }}"
+                enctype="multipart/form-data"
+            >
+
+                <input
+                    type="file"
+                    name="image"
+                    accept=".jpg,.jpeg,.png,.webp"
+                    required
+                >
+
+                <button
+                    type="submit"
+                    class="check-button"
+                >
+                    🔍 Check Freshness
+                </button>
+
+            </form>
+
+        </div>
+
+
+        <!-- =========================
+             FRESHNESS RESULT
+        ========================== -->
+
+        {% if prediction %}
+
+        <div class="result">
+
+            <h2>
+                FreshGuard Freshness Result
+            </h2>
+
+
+            <!-- PREDICTION -->
+
+            <div class="prediction">
+
+                {{ prediction }}
+
+            </div>
+
+
+            <!-- CONFIDENCE -->
+
+            {% if confidence is not none %}
+
+            <div class="confidence">
+
+                Confidence:
+
+                <strong>
+                    {{ "%.2f"|format(confidence) }}%
+                </strong>
+
+            </div>
+
+            {% endif %}
+
+
+            <!-- =========================
+                 ANALYZED IMAGE
+            ========================== -->
+
+            {% if image_path %}
+
+            <div class="preview">
+
+                <p>
+
+                    <strong>
+                        Analyzed Image
+                    </strong>
+
+                </p>
+
+                <img
+                    src="{{ image_path }}"
+                    alt="Uploaded food image"
+                >
+
+            </div>
+
+            {% endif %}
+
+
+            <!-- =========================
+                 WARNING
+            ========================== -->
+
+            {% if warning %}
+
+            <div class="warning">
+
+                <strong>
+                    ⚠️ Important Warning
+                </strong>
+
+                <br>
+                <br>
+
+                {{ warning }}
+
+            </div>
+
+            {% endif %}
+
+
+            <!-- =========================
+                 ADD FOOD + CANCEL
+            ========================== -->
+
+            <div class="action-buttons">
+
+
+                <!-- ADD FOOD -->
+                <form method="GET" action="{{ url_for('add_food') }}" style="margin: 0;">
+
+    <!-- Detected food name -->
+    <input type="hidden"
+           name="food_name"
+           value="{{ food_name or '' }}">
+
+    <!-- Uploaded food image -->
+    {% if image_filename %}
+        <input type="hidden"
+               name="image_path"
+               value="uploads/{{ image_filename }}">
+    {% elif image_path %}
+        <input type="hidden"
+               name="image_path"
+               value="uploads/{{ image_path.split('/')[-1] }}">
+    {% endif %}
+
+    <button type="submit" class="add-food-button">
+        ➕ Add Food
+    </button>
+
+</form>
+
+
+                <!-- CANCEL -->
+
+                <a
+                    href="{{ url_for('dashboard') }}"
+                    class="cancel-button"
+                >
+
+                    ✖ Cancel
+
+                </a>
+
+
+            </div>
+
+
+        </div>
+
+        {% endif %}
+
+
+        <!-- =========================
+             BACK TO DASHBOARD
+        ========================== -->
+
+        <a
+            href="{{ url_for('dashboard') }}"
+            class="back-link"
+        >
+
+            ← Back to Dashboard
+
+        </a>
+
+    </div>
+
+</div>
+
+</body>
+
+</html>

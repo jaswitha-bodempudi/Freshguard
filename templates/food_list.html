@@ -1,0 +1,218 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ page_title }} | FreshGuard</title>
+
+    <style>
+        :root {
+            --green: #27834c;
+            --text: #24352a;
+            --muted: #718078;
+            --border: #e1e9e2;
+            --background: #f5f8f5;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: var(--background);
+            color: var(--text);
+        }
+
+        .header {
+            background: white;
+            padding: 20px 5%;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .brand {
+            color: var(--green);
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .back-button {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: var(--green);
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .page-heading {
+            margin-bottom: 24px;
+        }
+
+        .page-heading h1 {
+            margin-bottom: 8px;
+            font-size: 28px;
+        }
+
+        .page-heading p {
+            color: var(--muted);
+        }
+
+        .table-card {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 650px;
+        }
+
+        th, td {
+            padding: 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            background: #edf5ee;
+            color: #31583c;
+            font-size: 13px;
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 6px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .fresh {
+            background: #e1f5e6;
+            color: #20753b;
+        }
+
+        .soon {
+            background: #fff0d6;
+            color: #966018;
+        }
+
+        .expired {
+            background: #fde5e5;
+            color: #b52d35;
+        }
+
+        .unknown {
+            background: #eeeeee;
+            color: #555555;
+        }
+
+        .empty {
+            padding: 40px 20px;
+            text-align: center;
+            color: var(--muted);
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                margin-top: 20px;
+                padding: 0 12px;
+            }
+
+            .page-heading h1 {
+                font-size: 23px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header class="header">
+        <div class="brand">🥬 FreshGuard</div>
+    </header>
+
+    <main class="container">
+
+        <a href="{{ url_for('dashboard') }}" class="back-button">
+            ← Back to Dashboard
+        </a>
+
+        <section class="page-heading">
+            <h1>{{ page_title }}</h1>
+            <p>
+                View and track the expiry dates of your food items.
+                Total items shown: {{ food_items|length }}
+            </p>
+        </section>
+
+        <section class="table-card">
+
+            {% if food_items %}
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Food Name</th>
+                        <th>Category</th>
+                        <th>Quantity</th>
+                        <th>Expiry Date</th>
+                        <th>Expiry Countdown</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for item in food_items %}
+                    <tr>
+                        <td>{{ item.food_name }}</td>
+                        <td>{{ item.category or "—" }}</td>
+                        <td>{{ item.quantity }}</td>
+                        <td>{{ item.expiry_date or "—" }}</td>
+                        <td>{{ item.expiry_label }}</td>
+                        <td>
+                            {% if item.days_left is none %}
+                                <span class="status unknown">Unknown</span>
+                            {% elif item.days_left < 0 %}
+                                <span class="status expired">Expired</span>
+                            {% elif item.days_left <= 3 %}
+                                <span class="status soon">Expiring Soon</span>
+                            {% else %}
+                                <span class="status fresh">Fresh</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            {% else %}
+
+            <div class="empty">
+                <h3>No food items found</h3>
+                <p>There are no items in this category right now.</p>
+            </div>
+
+            {% endif %}
+
+        </section>
+
+    </main>
+
+</body>
+</html>
