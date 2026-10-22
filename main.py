@@ -54,8 +54,10 @@ DATABASE = "freshguard.db"
 # ============================================================
 
 def get_db_connection():
-
-    connection = sqlite3.connect(DATABASE)
+    connection = sqlite3.connect(
+        DATABASE,
+        timeout=30
+    )
 
     connection.row_factory = sqlite3.Row
 
