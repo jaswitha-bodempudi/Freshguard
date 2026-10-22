@@ -231,6 +231,14 @@ def init_database():
     except sqlite3.OperationalError:
         # Column already exists
         pass
+        # Add category to existing food_history table
+    try:
+        cursor.execute(
+            "ALTER TABLE food_history ADD COLUMN category TEXT"
+        )
+    except sqlite3.OperationalError:
+        # Column already exists
+        pass
 
     connection.commit()
 
