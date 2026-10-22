@@ -186,62 +186,39 @@ def init_database():
     except sqlite3.OperationalError:
         # Column already exists
         pass
-    # Add category to food history for spending analysis
-    try:
-        cursor.execute(
-        "ALTER TABLE food_history ADD COLUMN category TEXT"
-        )
-    except sqlite3.OperationalError:
-        pass
+    
 
     # --------------------------------------------------------
     # FOOD HISTORY TABLE
     # --------------------------------------------------------
 
+    
     cursor.execute(
         """
         CREATE TABLE IF NOT EXISTS food_history (
-
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-
             user_id INTEGER NOT NULL,
-
             food_id INTEGER,
-
             food_name TEXT,
-
             action TEXT,
-
             action_date TEXT,
-
-            FOREIGN KEY (user_id)
-                REFERENCES users(id)
+            FOREIGN KEY (user_id) REFERENCES users(id)
         )
         """
     )
-        # --------------------------------------------------------
-    # DATABASE MIGRATION
-    # Add cost to existing food_history table
-    # --------------------------------------------------------
 
-    try:
-        cursor.execute(
-            "ALTER TABLE food_history ADD COLUMN cost REAL DEFAULT 0"
-        )
-    except sqlite3.OperationalError:
-        # Column already exists
-        pass
-        # Add category to existing food_history table
-    try:
-        cursor.execute(
-            "ALTER TABLE food_history ADD COLUMN category TEXT"
-        )
-    except sqlite3.OperationalError:
-        # Column already exists
-        pass
+    # Add missing columns to existing food_history table
+    for column_sql in [
+        "ALTER TABLE food_history ADD COLUMN cost REAL DEFAULT 0",
+        "ALTER TABLE food_history ADD COLUMN category TEXT",
+    ]:
+        try:
+            cursor.execute(column_sql)
+        except sqlite3.OperationalError as e:
+            if "duplicate column name" not in str(e).lower():
+                raise
 
     connection.commit()
-
     connection.close()
 
 
