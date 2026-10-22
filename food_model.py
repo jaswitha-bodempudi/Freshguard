@@ -10,25 +10,19 @@ from PIL import Image
 
 weights = ResNet50_Weights.DEFAULT
 
-model = models.resnet50(
-    weights=weights
-)
-
-model.eval()
+model = None
+preprocess = None
+categories = None
 
 
-# ==========================================
-# IMAGE PREPROCESSING
-# ==========================================
+def load_food_model():
+    global model, preprocess, categories
 
-preprocess = weights.transforms()
-
-
-# ==========================================
-# IMAGE CLASS LABELS
-# ==========================================
-
-categories = weights.meta["categories"]
+    if model is None:
+        model = models.resnet50(weights=weights)
+        model.eval()
+        preprocess = weights.transforms()
+        categories = weights.meta["categories"]
 
 
 # ==========================================
@@ -144,6 +138,7 @@ def recognize_food(
 ):
 
     try:
+        load_food_model()
 
         # --------------------------------------
         # OPEN IMAGE

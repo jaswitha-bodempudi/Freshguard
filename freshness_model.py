@@ -14,27 +14,35 @@ MODEL_PATH = "models/freshness_model.pth"
 # LOAD MODEL
 # -----------------------------
 
-checkpoint = torch.load(
-    MODEL_PATH,
-    map_location=DEVICE
-)
+classes = None
+model = None
 
-classes = checkpoint["classes"]
 
-model = models.resnet50(weights=None)
+def load_freshness_model():
+    global classes, model
 
-model.fc = torch.nn.Linear(
-    model.fc.in_features,
-    2
-)
+    if model is None:
+        checkpoint = torch.load(
+            MODEL_PATH,
+            map_location=DEVICE
+        )
 
-model.load_state_dict(
-    checkpoint["model_state_dict"]
-)
+        classes = checkpoint["classes"]
 
-model = model.to(DEVICE)
-model.eval()
+        loaded_model = models.resnet50(weights=None)
+        loaded_model.fc = torch.nn.Linear(
+            loaded_model.fc.in_features,
+            2
+        )
 
+        loaded_model.load_state_dict(
+            checkpoint["model_state_dict"]
+        )
+
+        loaded_model = loaded_model.to(DEVICE)
+        loaded_model.eval()
+
+        model = loaded_model
 
 # -----------------------------
 # IMAGE TRANSFORMATION
@@ -55,6 +63,7 @@ transform = transforms.Compose([
 # -----------------------------
 
 def predict_freshness(image_path):
+    load_freshness_model()
 
     image = Image.open(image_path).convert("RGB")
 
